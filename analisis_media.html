@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis de Media</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:#FF2D55; --orange:#FF6B35; --yellow:#FFD23F;
+    --purple:#A855F7; --cyan:#06B6D4; --green:#10B981;
+    --bg:#0A0A0F; --card:#1C1C28; --text:#F0F0F5; --muted:#8888AA;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'DM Sans',sans-serif;
+    min-height:100vh;padding:40px 24px;overflow-x:hidden;
+  }
+  body::before{
+    content:'';position:fixed;top:-200px;left:-200px;
+    width:600px;height:600px;
+    background:radial-gradient(circle,rgba(6,182,212,0.08) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  body::after{
+    content:'';position:fixed;bottom:-200px;right:-200px;
+    width:600px;height:600px;
+    background:radial-gradient(circle,rgba(16,185,129,0.06) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .wrapper{max-width:1100px;margin:0 auto;}
+
+  .header{margin-bottom:48px;border-left:4px solid var(--cyan);padding-left:20px;animation:fadeSlideIn .6s ease forwards;}
+  .header .eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:8px;}
+  .header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,7vw,72px);line-height:.95;color:var(--text);letter-spacing:1px;margin-bottom:12px;}
+  .header .subtitle{font-size:15px;color:var(--muted);font-weight:300;}
+  .header .highlight{color:var(--cyan);font-weight:700;}
+
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;animation:fadeSlideIn .6s ease .1s both;}
+  .stat-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:24px;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--cyan));}
+  .stat-card .val{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;color:var(--accent,var(--cyan));display:block;}
+  .stat-card .label{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.5px;margin-top:4px;text-transform:uppercase;}
+
+  .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+  .full{grid-column:1/-1;}
+  .section-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:20px;color:var(--text);display:flex;align-items:center;gap:10px;}
+  .section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
+  .chart-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:28px;}
+
+  /* RANKING CARDS */
+  .rank-list{display:flex;flex-direction:column;gap:10px;}
+  .rank-item{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 14px;border-radius:10px;
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);
+    transition:background .2s,transform .15s;cursor:default;
+  }
+  .rank-item:hover{background:rgba(255,255,255,.06);transform:translateX(3px);}
+  .rank-num{font-family:'Bebas Neue',sans-serif;font-size:22px;min-width:26px;text-align:center;color:var(--muted);}
+  .rank-info{flex:1;min-width:0;}
+  .rank-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rank-pres{font-size:10px;color:var(--muted);margin-top:1px;}
+  .rank-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-top:5px;}
+  .rank-bar-fill{height:100%;border-radius:99px;transition:width 1.3s cubic-bezier(.16,1,.3,1);width:0;}
+  .rank-bar-fill.animated{width:var(--target);}
+  .rank-venta{font-family:'Bebas Neue',sans-serif;font-size:16px;text-align:right;white-space:nowrap;}
+  .rank-units{font-size:10px;color:var(--muted);text-align:right;margin-top:2px;}
+
+  /* CATEGORY BUBBLES */
+  .bubble-wrap{display:flex;flex-direction:column;gap:14px;}
+  .bubble-item{}
+  .bubble-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .bubble-name{font-size:13px;font-weight:700;color:var(--text);}
+  .bubble-total{font-family:'Bebas Neue',sans-serif;font-size:18px;}
+  .bubble-sub{font-size:11px;color:var(--muted);margin-bottom:6px;}
+  .bbar-track{height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+  .bbar-fill{height:100%;border-radius:99px;transition:width 1.3s cubic-bezier(.16,1,.3,1);width:0;}
+  .bbar-fill.animated{width:var(--target);}
+
+  /* FORMAT PIE INFO */
+  .fmt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+  .fmt-card{
+    padding:16px;border-radius:10px;
+    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+    text-align:center;
+  }
+  .fmt-icon{font-size:26px;margin-bottom:6px;}
+  .fmt-label{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;}
+  .fmt-pct{font-family:'Bebas Neue',sans-serif;font-size:34px;}
+  .fmt-count{font-size:11px;color:var(--muted);margin-top:2px;}
+
+  /* BIG BAR CHART */
+  .bchart{display:flex;flex-direction:column;gap:8px;}
+  .bchart-row{display:flex;align-items:center;gap:10px;}
+  .bchart-label{width:130px;font-size:12px;color:var(--text);font-weight:600;text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bchart-track{flex:1;height:22px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden;position:relative;}
+  .bchart-fill{
+    height:100%;border-radius:6px;
+    transition:width 1.3s cubic-bezier(.16,1,.3,1);width:0;
+    display:flex;align-items:center;justify-content:flex-end;padding-right:8px;
+  }
+  .bchart-fill.animated{width:var(--target);}
+  .bchart-val{font-family:'Bebas Neue',sans-serif;font-size:13px;color:rgba(0,0,0,.7);white-space:nowrap;}
+  .bchart-ext{font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--muted);margin-left:8px;white-space:nowrap;}
+
+  /* TABLE */
+  .tbl-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:700px;}
+  thead th{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:9px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);}
+  tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s;}
+  tbody tr:hover{background:rgba(255,255,255,.03);}
+  tbody tr.total-row{border-top:1px solid rgba(255,255,255,.12);border-bottom:none;}
+  tbody td{padding:10px 12px;font-size:12px;color:var(--muted);}
+  tbody td:first-child{color:var(--text);font-weight:600;}
+  .total-row td{color:var(--text)!important;font-weight:700;}
+  .num{font-family:'Bebas Neue',sans-serif;font-size:16px;}
+  .fmt-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;}
+  .bc{background:rgba(255,210,63,.1);border:1px solid rgba(255,210,63,.2);color:#FFE57A;}
+  .bp{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#6EEAC4;}
+  .bb{background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2);color:#D8A4FF;}
+
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  @media(max-width:720px){.main-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}.fmt-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<style>
+.back-btn {
+  position: fixed; top: 24px; left: 24px; z-index: 9999;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  background: rgba(28,28,40,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px;
+  text-decoration: none;
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px; font-weight: 600; color: #F0F0F5;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background .2s, border-color .2s, transform .2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.back-btn:hover {
+  background: rgba(255,107,53,.15);
+  border-color: rgba(255,107,53,.4);
+  transform: translateX(-3px);
+}
+.back-btn .arrow { font-size: 16px; }
+</style>
+<a class="back-btn" href="index.html">
+  <span class="arrow">←</span>
+  <span>Menú principal</span>
+</a>
+
+<div class="wrapper">
+
+  <div class="header">
+    <p class="eyebrow">Análisis Estadístico · Volumen de Ventas Mensual</p>
+    <h1>ANÁLISIS<br>DE MEDIA</h1>
+    <p class="subtitle">
+      <span class="highlight">TOP 15 productos por volumen mensual · $3,116,910 en ventas.</span>
+      Los refrescos y básicos dominan el volumen; los artículos de limpieza y bebés lideran en margen unitario.
+    </p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card" style="--accent:#06B6D4">
+      <span class="val">$3.1M</span>
+      <span class="label">Ventas mensuales TOP 15 productos</span>
+    </div>
+    <div class="stat-card" style="--accent:#FFD23F">
+      <span class="val">$652K</span>
+      <span class="label">Sabritas — mayor venta mensual individual</span>
+    </div>
+    <div class="stat-card" style="--accent:#10B981">
+      <span class="val">2,850</span>
+      <span class="label">Coca Cola 3L — mayor volumen de unidades</span>
+    </div>
+    <div class="stat-card" style="--accent:#A855F7">
+      <span class="val">15</span>
+      <span class="label">Productos en análisis de media</span>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- RANKING LEFT -->
+    <div class="chart-card" style="animation:fadeSlideIn .6s ease .2s both">
+      <div class="section-title">Ranking por Venta Mensual</div>
+      <div class="rank-list">
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#FF2D55">1</div>
+          <div class="rank-info">
+            <div class="rank-name">Sabritas</div>
+            <div class="rank-pres">45g · caja 50 pzas · 1,450 cajas</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:100%;background:#FF2D55"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#FF2D55">$652,500</div><div class="rank-units">$450/caja</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#FF6B35">2</div>
+          <div class="rank-info">
+            <div class="rank-name">Coca Cola 3L</div>
+            <div class="rank-pres">Paquete 6 pzas · 2,850 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:84%;background:#FF6B35"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#FF6B35">$547,200</div><div class="rank-units">$192/caja</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#FFD23F">3</div>
+          <div class="rank-info">
+            <div class="rank-name">Pepsi 3L</div>
+            <div class="rank-pres">Paquete 6 pzas · 1,890 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:52%;background:#FFD23F"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#FFD23F">$340,200</div><div class="rank-units">$180/caja</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#10B981">4</div>
+          <div class="rank-info">
+            <div class="rank-name">Coca Cola 600ml</div>
+            <div class="rank-pres">Caja 12 pzas · 2,100 cajas</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:39%;background:#10B981"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#10B981">$252,000</div><div class="rank-units">$120/caja</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#06B6D4">5</div>
+          <div class="rank-info">
+            <div class="rank-name">Pañal bebé</div>
+            <div class="rank-pres">Paquete 30 pzas · 1,250 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:34%;background:#06B6D4"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#06B6D4">$225,000</div><div class="rank-units">$180/paq</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#A855F7">6</div>
+          <div class="rank-info">
+            <div class="rank-name">Papel Higiénico</div>
+            <div class="rank-pres">Paquete 12 rollos · 1,980 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:29%;background:#A855F7"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#A855F7">$188,100</div><div class="rank-units">$95/paq</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#EC4899">7</div>
+          <div class="rank-info">
+            <div class="rank-name">Huevo</div>
+            <div class="rank-pres">Caja 30 pzas · 1,850 cajas</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:24%;background:#EC4899"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#EC4899">$157,250</div><div class="rank-units">$85/caja</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#14B8A6">8</div>
+          <div class="rank-info">
+            <div class="rank-name">Leche Lala 1L</div>
+            <div class="rank-pres">Paquete 6 pzas · 2,200 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:26%;background:#14B8A6"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#14B8A6">$171,600</div><div class="rank-units">$78/paq</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#F97316">9</div>
+          <div class="rank-info">
+            <div class="rank-name">Yogurt Bebible</div>
+            <div class="rank-pres">1L paquete 6 pzas · 1,580 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:21%;background:#F97316"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#F97316">$134,300</div><div class="rank-units">$85/paq</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#8B5CF6">10</div>
+          <div class="rank-info">
+            <div class="rank-name">Zote</div>
+            <div class="rank-pres">200g paquete 12 pzas · 1,450 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:19%;background:#8B5CF6"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#8B5CF6">$123,250</div><div class="rank-units">$85/paq</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#0EA5E9">11</div>
+          <div class="rank-info">
+            <div class="rank-name">Fabuloso 1L</div>
+            <div class="rank-pres">Paquete 6 pzas · 1,380 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:15%;background:#0EA5E9"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#0EA5E9">$99,360</div><div class="rank-units">$72/paq</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#84CC16">12</div>
+          <div class="rank-info">
+            <div class="rank-name">Cloralex 1L</div>
+            <div class="rank-pres">Paquete 6 pzas · 1,250 paq</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:12%;background:#84CC16"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#84CC16">$81,250</div><div class="rank-units">$65/paq</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#FB923C">13</div>
+          <div class="rank-info">
+            <div class="rank-name">Maseca 1kg</div>
+            <div class="rank-pres">Bolsa 10 pzas · 2,450 bolsas</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:8%;background:#FB923C"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#FB923C">$53,900</div><div class="rank-units">$22/bolsa</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#6366F1">14</div>
+          <div class="rank-info">
+            <div class="rank-name">Frijol La Sierra</div>
+            <div class="rank-pres">1kg bolsa 10 · 1,750 bolsas</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:8%;background:#6366F1"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#6366F1">$49,000</div><div class="rank-units">$28/bolsa</div></div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-num" style="color:#94A3B8">15</div>
+          <div class="rank-info">
+            <div class="rank-name">Arroz 1kg</div>
+            <div class="rank-pres">Bolsa 10 pzas · 1,680 bolsas</div>
+            <div class="rank-bar-track"><div class="rank-bar-fill" style="--target:6%;background:#94A3B8"></div></div>
+          </div>
+          <div><div class="rank-venta" style="color:#94A3B8">$42,000</div><div class="rank-units">$25/bolsa</div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- BY CATEGORY -->
+      <div class="chart-card" style="animation:fadeSlideIn .6s ease .3s both">
+        <div class="section-title">Venta por Categoría</div>
+        <div class="bubble-wrap">
+
+          <div class="bubble-item">
+            <div class="bubble-header">
+              <span class="bubble-name">Refrescos</span>
+              <span class="bubble-total" style="color:#FF2D55">$1,139,400</span>
+            </div>
+            <div class="bubble-sub">Coca Cola 3L + 600ml + Pepsi · 36.6% del total</div>
+            <div class="bbar-track"><div class="bbar-fill" style="--target:100%;background:linear-gradient(90deg,#FF2D55,#FF6B35)"></div></div>
+          </div>
+
+          <div class="bubble-item">
+            <div class="bubble-header">
+              <span class="bubble-name">Botanas</span>
+              <span class="bubble-total" style="color:#FFD23F">$652,500</span>
+            </div>
+            <div class="bubble-sub">Sabritas · 20.9% del total</div>
+            <div class="bbar-track"><div class="bbar-fill" style="--target:57%;background:linear-gradient(90deg,#FFD23F,#F97316)"></div></div>
+          </div>
+
+          <div class="bubble-item">
+            <div class="bubble-header">
+              <span class="bubble-name">Lácteos</span>
+              <span class="bubble-total" style="color:#10B981">$305,900</span>
+            </div>
+            <div class="bubble-sub">Leche Lala + Yogurt · 9.8% del total</div>
+            <div class="bbar-track"><div class="bbar-fill" style="--target:27%;background:linear-gradient(90deg,#10B981,#06B6D4)"></div></div>
+          </div>
+
+          <div class="bubble-item">
+            <div class="bubble-header">
+              <span class="bubble-name">Cuidado personal / Bebé</span>
+              <span class="bubble-total" style="color:#06B6D4">$225,000</span>
+            </div>
+            <div class="bubble-sub">Pañal bebé · 7.2% del total</div>
+            <div class="bbar-track"><div class="bbar-fill" style="--target:20%;background:linear-gradient(90deg,#06B6D4,#A855F7)"></div></div>
+          </div>
+
+          <div class="bubble-item">
+            <div class="bubble-header">
+              <span class="bubble-name">Limpieza</span>
+              <span class="bubble-total" style="color:#A855F7">$303,860</span>
+            </div>
+            <div class="bubble-sub">Papel + Zote + Fabuloso + Cloralex · 9.8%</div>
+            <div class="bbar-track"><div class="bbar-fill" style="--target:27%;background:linear-gradient(90deg,#A855F7,#EC4899)"></div></div>
+          </div>
+
+          <div class="bubble-item">
+            <div class="bubble-header">
+              <span class="bubble-name">Básicos / Abarrotes</span>
+              <span class="bubble-total" style="color:#FB923C">$302,150</span>
+            </div>
+            <div class="bubble-sub">Huevo + Maseca + Frijol + Arroz · 9.7%</div>
+            <div class="bbar-track"><div class="bbar-fill" style="--target:27%;background:linear-gradient(90deg,#FB923C,#FFD23F)"></div></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- FORMAT -->
+      <div class="chart-card" style="animation:fadeSlideIn .6s ease .35s both">
+        <div class="section-title">Formato de Venta</div>
+        <div class="fmt-grid">
+          <div class="fmt-card">
+            <div class="fmt-icon">📦</div>
+            <div class="fmt-label">Caja</div>
+            <div class="fmt-pct" style="color:#FFD23F">47%</div>
+            <div class="fmt-count">7 productos</div>
+          </div>
+          <div class="fmt-card">
+            <div class="fmt-icon">🛍️</div>
+            <div class="fmt-label">Paquete</div>
+            <div class="fmt-pct" style="color:#10B981">40%</div>
+            <div class="fmt-count">6 productos</div>
+          </div>
+          <div class="fmt-card">
+            <div class="fmt-icon">🧺</div>
+            <div class="fmt-label">Bolsa</div>
+            <div class="fmt-pct" style="color:#A855F7">13%</div>
+            <div class="fmt-count">2 productos</div>
+          </div>
+          <div class="fmt-card" style="background:rgba(6,182,212,.05);border-color:rgba(6,182,212,.12)">
+            <div class="fmt-icon">📊</div>
+            <div class="fmt-label">Precio prom.</div>
+            <div class="fmt-pct" style="color:#06B6D4">$138</div>
+            <div class="fmt-count">por unidad vendida</div>
+          </div>
+        </div>
+
+        <!-- Top 3 highlight -->
+        <div style="padding:14px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.06)">
+          <div style="font-size:11px;color:var(--cyan);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Top 3 por volumen de unidades</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:var(--text);">🥤 Coca Cola 3L</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#FF6B35">2,850 paq</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:var(--text);">🌽 Maseca 1kg</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#FB923C">2,450 bolsas</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:var(--text);">🥛 Leche Lala</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#14B8A6">2,200 paq</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- HORIZONTAL BAR CHART full width -->
+    <div class="chart-card full" style="animation:fadeSlideIn .6s ease .4s both">
+      <div class="section-title">Venta Mensual por Producto ($)</div>
+      <div class="bchart">
+        <div class="bchart-row"><div class="bchart-label">Sabritas</div><div class="bchart-track"><div class="bchart-fill" style="--target:100%;background:linear-gradient(90deg,#FF2D55,#FF6B35)"><span class="bchart-val">$652,500</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Coca Cola 3L</div><div class="bchart-track"><div class="bchart-fill" style="--target:84%;background:linear-gradient(90deg,#FF6B35,#FFD23F)"><span class="bchart-val">$547,200</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Pepsi 3L</div><div class="bchart-track"><div class="bchart-fill" style="--target:52%;background:linear-gradient(90deg,#FFD23F,#10B981)"><span class="bchart-val">$340,200</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Coca Cola 600ml</div><div class="bchart-track"><div class="bchart-fill" style="--target:39%;background:linear-gradient(90deg,#10B981,#06B6D4)"><span class="bchart-val">$252,000</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Pañal bebé</div><div class="bchart-track"><div class="bchart-fill" style="--target:34%;background:linear-gradient(90deg,#06B6D4,#A855F7)"><span class="bchart-val">$225,000</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Papel Higiénico</div><div class="bchart-track"><div class="bchart-fill" style="--target:29%;background:linear-gradient(90deg,#A855F7,#EC4899)"><span class="bchart-val">$188,100</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Leche Lala</div><div class="bchart-track"><div class="bchart-fill" style="--target:26%;background:linear-gradient(90deg,#14B8A6,#10B981)"><span class="bchart-val">$171,600</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Huevo</div><div class="bchart-track"><div class="bchart-fill" style="--target:24%;background:linear-gradient(90deg,#EC4899,#F97316)"><span class="bchart-val">$157,250</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Yogurt Bebible</div><div class="bchart-track"><div class="bchart-fill" style="--target:21%;background:linear-gradient(90deg,#F97316,#FB923C)"><span class="bchart-val">$134,300</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Zote</div><div class="bchart-track"><div class="bchart-fill" style="--target:19%;background:linear-gradient(90deg,#8B5CF6,#A855F7)"><span class="bchart-val">$123,250</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Fabuloso</div><div class="bchart-track"><div class="bchart-fill" style="--target:15%;background:linear-gradient(90deg,#0EA5E9,#06B6D4)"><span class="bchart-val">$99,360</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Cloralex</div><div class="bchart-track"><div class="bchart-fill" style="--target:12%;background:linear-gradient(90deg,#84CC16,#10B981)"><span class="bchart-val">$81,250</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Maseca</div><div class="bchart-track"><div class="bchart-fill" style="--target:8%;background:linear-gradient(90deg,#FB923C,#FFD23F)"><span class="bchart-val">$53,900</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Frijol La Sierra</div><div class="bchart-track"><div class="bchart-fill" style="--target:8%;background:linear-gradient(90deg,#6366F1,#8B5CF6)"><span class="bchart-val">$49,000</span></div></div></div>
+        <div class="bchart-row"><div class="bchart-label">Arroz</div><div class="bchart-track"><div class="bchart-fill" style="--target:6%;background:linear-gradient(90deg,#94A3B8,#CBD5E1)"><span class="bchart-val">$42,000</span></div></div></div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)">
+          <span style="font-size:13px;color:var(--muted)">TOTAL &nbsp;</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--cyan)">$3,116,910</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="chart-card full" style="animation:fadeSlideIn .6s ease .5s both">
+      <div class="section-title">Tabla Completa</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Producto</th><th>Presentación</th>
+              <th>Unidades/mes</th><th>Formato</th><th>Precio unit.</th><th>Venta mensual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="num" style="color:#FF2D55">1</span></td><td>Sabritas</td><td style="font-size:11px">45g · caja 50 pzas</td><td><span class="num">1,450</span> cajas</td><td><span class="fmt-badge bc">Caja</span></td><td><span class="num">$450</span></td><td><span class="num" style="color:#FF2D55">$652,500</span></td></tr>
+            <tr><td><span class="num" style="color:#FF6B35">2</span></td><td>Coca Cola 3L</td><td style="font-size:11px">Paquete 6 pzas</td><td><span class="num">2,850</span> paq</td><td><span class="fmt-badge bc">Caja</span></td><td><span class="num">$192</span></td><td><span class="num" style="color:#FF6B35">$547,200</span></td></tr>
+            <tr><td><span class="num" style="color:#FFD23F">3</span></td><td>Pepsi 3L</td><td style="font-size:11px">Paquete 6 pzas</td><td><span class="num">1,890</span> paq</td><td><span class="fmt-badge bc">Caja</span></td><td><span class="num">$180</span></td><td><span class="num" style="color:#FFD23F">$340,200</span></td></tr>
+            <tr><td><span class="num" style="color:#10B981">4</span></td><td>Coca Cola 600ml</td><td style="font-size:11px">Caja 12 pzas</td><td><span class="num">2,100</span> cajas</td><td><span class="fmt-badge bc">Caja</span></td><td><span class="num">$120</span></td><td><span class="num" style="color:#10B981">$252,000</span></td></tr>
+            <tr><td><span class="num" style="color:#06B6D4">5</span></td><td>Pañal bebé</td><td style="font-size:11px">Paquete 30 pzas</td><td><span class="num">1,250</span> paq</td><td><span class="fmt-badge bp">Paquete</span></td><td><span class="num">$180</span></td><td><span class="num" style="color:#06B6D4">$225,000</span></td></tr>
+            <tr><td><span class="num" style="color:#A855F7">6</span></td><td>Papel Higiénico</td><td style="font-size:11px">Paquete 12 rollos</td><td><span class="num">1,980</span> paq</td><td><span class="fmt-badge bp">Paquete</span></td><td><span class="num">$95</span></td><td><span class="num" style="color:#A855F7">$188,100</span></td></tr>
+            <tr><td><span class="num" style="color:#14B8A6">7</span></td><td>Leche Lala 1L</td><td style="font-size:11px">Paquete 6 pzas</td><td><span class="num">2,200</span> paq</td><td><span class="fmt-badge bp">Paquete</span></td><td><span class="num">$78</span></td><td><span class="num" style="color:#14B8A6">$171,600</span></td></tr>
+            <tr><td><span class="num" style="color:#EC4899">8</span></td><td>Huevo</td><td style="font-size:11px">Caja 30 pzas</td><td><span class="num">1,850</span> cajas</td><td><span class="fmt-badge bc">Caja</span></td><td><span class="num">$85</span></td><td><span class="num" style="color:#EC4899">$157,250</span></td></tr>
+            <tr><td><span class="num" style="color:#F97316">9</span></td><td>Yogurt Bebible</td><td style="font-size:11px">1L paquete 6 pzas</td><td><span class="num">1,580</span> paq</td><td><span class="fmt-badge bp">Paquete</span></td><td><span class="num">$85</span></td><td><span class="num" style="color:#F97316">$134,300</span></td></tr>
+            <tr><td><span class="num" style="color:#8B5CF6">10</span></td><td>Zote</td><td style="font-size:11px">200g paquete 12 pzas</td><td><span class="num">1,450</span> paq</td><td><span class="fmt-badge bp">Paquete</span></td><td><span class="num">$85</span></td><td><span class="num" style="color:#8B5CF6">$123,250</span></td></tr>
+            <tr><td><span class="num" style="color:#0EA5E9">11</span></td><td>Fabuloso 1L</td><td style="font-size:11px">Paquete 6 pzas</td><td><span class="num">1,380</span> paq</td><td><span class="fmt-badge bp">Paquete</span></td><td><span class="num">$72</span></td><td><span class="num" style="color:#0EA5E9">$99,360</span></td></tr>
+            <tr><td><span class="num" style="color:#84CC16">12</span></td><td>Cloralex 1L</td><td style="font-size:11px">Paquete 6 pzas</td><td><span class="num">1,250</span> paq</td><td><span class="fmt-badge bp">Paquete</span></td><td><span class="num">$65</span></td><td><span class="num" style="color:#84CC16">$81,250</span></td></tr>
+            <tr><td><span class="num" style="color:#FB923C">13</span></td><td>Maseca 1kg</td><td style="font-size:11px">Bolsa 10 pzas</td><td><span class="num">2,450</span> bolsas</td><td><span class="fmt-badge bb">Bolsa</span></td><td><span class="num">$22</span></td><td><span class="num" style="color:#FB923C">$53,900</span></td></tr>
+            <tr><td><span class="num" style="color:#6366F1">14</span></td><td>Frijol La Sierra</td><td style="font-size:11px">1kg bolsa 10 pzas</td><td><span class="num">1,750</span> bolsas</td><td><span class="fmt-badge bb">Bolsa</span></td><td><span class="num">$28</span></td><td><span class="num" style="color:#6366F1">$49,000</span></td></tr>
+            <tr><td><span class="num" style="color:#94A3B8">15</span></td><td>Arroz 1kg</td><td style="font-size:11px">Bolsa 10 pzas</td><td><span class="num">1,680</span> bolsas</td><td><span class="fmt-badge bb">Bolsa</span></td><td><span class="num">$25</span></td><td><span class="num" style="color:#94A3B8">$42,000</span></td></tr>
+            <tr class="total-row">
+              <td colspan="3">TOTAL TOP 15</td>
+              <td></td><td></td><td></td>
+              <td><span class="num" style="color:var(--cyan)">$3,116,910</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.rank-bar-fill, .bbar-fill, .bchart-fill').forEach(el => el.classList.add('animated'));
+  }, 300);
+</script>
+</body>
+</html>

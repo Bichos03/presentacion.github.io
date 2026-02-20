@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abarrotes Gayba — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:#FF2D55; --orange:#FF6B35; --yellow:#FFD23F;
+    --purple:#A855F7; --cyan:#06B6D4; --green:#10B981;
+    --bg:#0A0A0F; --card:#1C1C28; --text:#F0F0F5; --muted:#8888AA;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:'DM Sans',sans-serif;
+    min-height:100vh; padding:48px 32px;
+    overflow-x:hidden;
+  }
+
+  /* BG GLOWS */
+  body::before {
+    content:''; position:fixed; top:-300px; left:-200px;
+    width:800px; height:800px;
+    background:radial-gradient(circle, rgba(255,107,53,0.07) 0%, transparent 65%);
+    pointer-events:none; z-index:0;
+  }
+  body::after {
+    content:''; position:fixed; bottom:-300px; right:-200px;
+    width:800px; height:800px;
+    background:radial-gradient(circle, rgba(6,182,212,0.06) 0%, transparent 65%);
+    pointer-events:none; z-index:0;
+  }
+
+  .wrapper { max-width:1200px; margin:0 auto; position:relative; z-index:1; }
+
+  /* TOP BAR */
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:64px;
+    animation: fadeSlideIn .5s ease forwards;
+  }
+  .logo {
+    display:flex; align-items:center; gap:14px;
+  }
+  .logo-icon {
+    width:46px; height:46px; border-radius:12px;
+    background:linear-gradient(135deg, var(--orange), var(--yellow));
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; flex-shrink:0;
+  }
+  .logo-text {}
+  .logo-name {
+    font-family:'Bebas Neue',sans-serif; font-size:22px;
+    letter-spacing:1px; color:var(--text); line-height:1;
+  }
+  .logo-sub { font-size:11px; color:var(--muted); letter-spacing:.5px; }
+
+  .topbar-right {
+    display:flex; align-items:center; gap:10px;
+    font-size:12px; color:var(--muted);
+  }
+  .status-dot {
+    width:8px; height:8px; border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 8px var(--green);
+    animation:pulse 2s infinite;
+  }
+
+  /* HEADER */
+  .header {
+    margin-bottom:56px;
+    animation: fadeSlideIn .6s ease .05s both;
+  }
+  .header .eyebrow {
+    font-size:11px; font-weight:700; letter-spacing:4px;
+    text-transform:uppercase; color:var(--orange); margin-bottom:12px;
+  }
+  .header h1 {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(56px,8vw,96px); line-height:.9;
+    color:var(--text); letter-spacing:1px; margin-bottom:18px;
+  }
+  .header h1 span { color:var(--orange); }
+  .header .subtitle {
+    font-size:17px; color:var(--muted); font-weight:300;
+    line-height:1.7; max-width:640px;
+  }
+  .header .highlight { color:var(--text); font-weight:600; }
+
+  /* SUMMARY STATS */
+  .summary-row {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:14px; margin-bottom:56px;
+    animation: fadeSlideIn .6s ease .1s both;
+  }
+  .summary-stat {
+    background:var(--card); border:1px solid rgba(255,255,255,.06);
+    border-radius:12px; padding:20px 22px; position:relative; overflow:hidden;
+  }
+  .summary-stat::before {
+    content:''; position:absolute; top:0; left:0; right:0;
+    height:2px; background:var(--s-color, var(--orange));
+  }
+  .summary-stat .s-val {
+    font-family:'Bebas Neue',sans-serif; font-size:38px; line-height:1;
+    color:var(--s-color, var(--orange)); display:block; margin-bottom:4px;
+  }
+  .summary-stat .s-label { font-size:12px; color:var(--muted); }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px;
+    color:var(--muted); text-transform:uppercase; margin-bottom:20px;
+    display:flex; align-items:center; gap:12px;
+    animation: fadeSlideIn .6s ease .15s both;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.07); }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+    margin-bottom:40px;
+  }
+
+  /* CARD */
+  .card {
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;
+    padding:28px;
+    position:relative; overflow:hidden;
+    text-decoration:none; color:inherit;
+    display:flex; flex-direction:column; gap:0;
+    transition:transform .25s cubic-bezier(.16,1,.3,1),
+               border-color .25s, box-shadow .25s;
+    cursor:pointer;
+    animation: fadeSlideIn .6s ease var(--delay, 0.2s) both;
+  }
+  .card:hover {
+    transform:translateY(-6px);
+    border-color:var(--c-color);
+    box-shadow:0 20px 50px rgba(0,0,0,.4), 0 0 0 1px var(--c-color);
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0;
+    height:3px; background:var(--c-color);
+    transition:height .25s;
+  }
+  .card:hover::before { height:4px; }
+
+  /* Glow on hover */
+  .card::after {
+    content:''; position:absolute; top:0; left:0; right:0; bottom:0;
+    background:radial-gradient(ellipse at top, var(--c-glow, rgba(255,107,53,0.08)), transparent 70%);
+    opacity:0; transition:opacity .3s;
+    pointer-events:none;
+  }
+  .card:hover::after { opacity:1; }
+
+  .card-num {
+    font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:3px;
+    color:var(--c-color); text-transform:uppercase; margin-bottom:14px;
+  }
+  .card-icon { font-size:34px; margin-bottom:14px; }
+  .card-title {
+    font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:.5px;
+    color:var(--text); line-height:1.05; margin-bottom:10px;
+  }
+  .card-desc {
+    font-size:13px; color:var(--muted); line-height:1.65;
+    flex:1; margin-bottom:20px;
+  }
+  .card-footer {
+    display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; border-top:1px solid rgba(255,255,255,.07);
+  }
+  .card-tags { display:flex; gap:6px; flex-wrap:wrap; }
+  .card-tag {
+    font-size:10px; padding:3px 8px; border-radius:99px; font-weight:600;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);
+    color:rgba(255,255,255,.45);
+  }
+  .card-arrow {
+    font-size:18px; color:var(--c-color); opacity:.6;
+    transition:transform .2s, opacity .2s;
+  }
+  .card:hover .card-arrow { transform:translateX(4px); opacity:1; }
+
+  /* WIDE CARD (spans 2 cols) */
+  .card-wide { grid-column:span 2; }
+
+  /* BOTTOM FOOTER */
+  .page-footer {
+    margin-top:48px; padding-top:28px;
+    border-top:1px solid rgba(255,255,255,.07);
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:12px; color:var(--muted);
+    animation: fadeSlideIn .6s ease .5s both;
+  }
+  .page-footer strong { color:var(--text); }
+
+  @keyframes fadeSlideIn {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:.4; }
+  }
+
+  @media(max-width:900px) {
+    .cards-grid { grid-template-columns:repeat(2,1fr); }
+    .card-wide { grid-column:span 2; }
+    .summary-row { grid-template-columns:repeat(2,1fr); }
+  }
+  @media(max-width:560px) {
+    .cards-grid { grid-template-columns:1fr; }
+    .card-wide { grid-column:span 1; }
+    .summary-row { grid-template-columns:1fr 1fr; }
+    body { padding:28px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">🛒</div>
+      <div class="logo-text">
+        <div class="logo-name">Abarrotes Gayba</div>
+        <div class="logo-sub">Sistema de Análisis Operativo</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-dot"></div>
+      8 reportes disponibles
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <p class="eyebrow">Menu Principal · Diagnóstico Completo</p>
+    <h1>ANÁLISIS<br><span>OPERATIVO</span></h1>
+    <p class="subtitle">
+      Diagnóstico completo de ventas, clientes, problemáticas y estadísticas de
+      <span class="highlight">232 clientes en 5 comunidades</span>.
+      Selecciona una sección para explorar el análisis detallado.
+    </p>
+  </div>
+
+  <!-- SUMMARY STATS -->
+  <div class="summary-row">
+    <div class="summary-stat" style="--s-color:#FF6B35">
+      <span class="s-val">232</span>
+      <span class="s-label">Clientes activos en ruta</span>
+    </div>
+    <div class="summary-stat" style="--s-color:#10B981">
+      <span class="s-val">$12.5M</span>
+      <span class="s-label">Ventas anuales estimadas</span>
+    </div>
+    <div class="summary-stat" style="--s-color:#FF2D55">
+      <span class="s-val">$88K</span>
+      <span class="s-label">Pérdida mensual máxima estimada</span>
+    </div>
+    <div class="summary-stat" style="--s-color:#A855F7">
+      <span class="s-val">3</span>
+      <span class="s-label">Problemas críticos detectados</span>
+    </div>
+  </div>
+
+  <!-- SECTION LABEL -->
+  <div class="section-label">Reportes del Sistema</div>
+
+  <!-- CARDS GRID -->
+  <div class="cards-grid">
+
+    <!-- 1. Contexto Gayba -->
+    <a class="card" href="contexto_gayba.html"
+       style="--c-color:#FF6B35; --c-glow:rgba(255,107,53,0.10); --delay:.18s">
+      <div class="card-num">Reporte 00</div>
+      <div class="card-icon">🏢</div>
+      <div class="card-title">Contexto<br>Abarrotes Gayba</div>
+      <p class="card-desc">Descripción de la empresa, sistema SICAR, proceso actual de levantamiento de pedidos y los 6 problemas operativos identificados.</p>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Empresa</span>
+          <span class="card-tag">SICAR</span>
+          <span class="card-tag">Proceso</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 2. Distribución de Clientes -->
+    <a class="card" href="distribucion_clientes.html"
+       style="--c-color:#FF2D55; --c-glow:rgba(255,45,85,0.10); --delay:.22s">
+      <div class="card-num">Reporte 01</div>
+      <div class="card-icon">👥</div>
+      <div class="card-title">Distribución<br>de Clientes</div>
+      <p class="card-desc">232 clientes distribuidos en 5 comunidades. Ocotal lidera con 52 clientes (22.4%). Análisis de cobertura y concentración geográfica.</p>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Clientes</span>
+          <span class="card-tag">Comunidades</span>
+          <span class="card-tag">Cobertura</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 3. Errores en Precios -->
+    <a class="card" href="errores_precios.html"
+       style="--c-color:#A855F7; --c-glow:rgba(168,85,247,0.10); --delay:.26s">
+      <div class="card-num">Reporte 02</div>
+      <div class="card-icon">💸</div>
+      <div class="card-title">Errores<br>en Precios</div>
+      <p class="card-desc">78% de los clientes (181 personas) reportaron errores de cobro. 469 productos con error estimado — $18K–$25K de impacto mensual.</p>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Errores</span>
+          <span class="card-tag">Cobros</span>
+          <span class="card-tag">Impacto $</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 4. Falta de Mercancía -->
+    <a class="card" href="problemas_falta_mercancia.html"
+       style="--c-color:#FFD23F; --c-glow:rgba(255,210,63,0.08); --delay:.30s">
+      <div class="card-num">Reporte 03</div>
+      <div class="card-icon">📦</div>
+      <div class="card-title">Falta de<br>Mercancía</div>
+      <p class="card-desc">30% de los clientes (70 personas) no reciben todos sus productos. Mogone lidera con 21% de falta. Análisis de causas y comunidades afectadas.</p>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Surtido</span>
+          <span class="card-tag">Faltantes</span>
+          <span class="card-tag">$45K–$55K</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 5. Ventas Anuales — WIDE -->
+    <a class="card card-wide" href="ventas_anuales.html"
+       style="--c-color:#10B981; --c-glow:rgba(16,185,129,0.09); --delay:.34s">
+      <div class="card-num">Reporte 04</div>
+      <div class="card-icon">📈</div>
+      <div class="card-title">Ventas Anuales<br>(52 Semanas)</div>
+      <p class="card-desc">$12,507,500 en ventas anuales. Ocotal lidera con $3.25M. Ticket promedio de $1,070 y 37 productos por visita. Desglose por comunidad, categoría y formato (caja vs pieza).</p>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Ventas</span>
+          <span class="card-tag">Ticket</span>
+          <span class="card-tag">Comunidades</span>
+          <span class="card-tag">52 semanas</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 6. Análisis Moda -->
+    <a class="card" href="analisis_moda.html"
+       style="--c-color:#06B6D4; --c-glow:rgba(6,182,212,0.09); --delay:.38s">
+      <div class="card-num">Reporte 05</div>
+      <div class="card-icon">🏆</div>
+      <div class="card-title">Análisis<br>de Moda</div>
+      <p class="card-desc">TOP 10 productos presentes en más del 80% de las compras. Coca Cola lidera con 95% de penetración. El surtido mínimo indispensable de cada visita.</p>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Moda</span>
+          <span class="card-tag">Top 10</span>
+          <span class="card-tag">Penetración</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 7. Análisis Media -->
+    <a class="card" href="analisis_media.html"
+       style="--c-color:#F97316; --c-glow:rgba(249,115,22,0.09); --delay:.42s">
+      <div class="card-num">Reporte 06</div>
+      <div class="card-icon">📊</div>
+      <div class="card-title">Análisis<br>de Media</div>
+      <p class="card-desc">TOP 15 productos por volumen mensual. $3,116,910 en ventas. Sabritas lidera en ingresos ($652K), Coca Cola 3L en unidades (2,850 paq/mes).</p>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Media</span>
+          <span class="card-tag">Volumen</span>
+          <span class="card-tag">Top 15</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 8. Resumen Problemáticas — WIDE -->
+    <a class="card card-wide" href="resumen_problematicas.html"
+       style="--c-color:#FF2D55; --c-glow:rgba(255,45,85,0.12); --delay:.46s">
+      <div class="card-num">Reporte 07</div>
+      <div class="card-icon">⚠️</div>
+      <div class="card-title">Resumen de<br>Problemáticas</div>
+      <p class="card-desc">Los 3 problemas críticos generan pérdidas de $71,000–$88,000 mensuales. Proyección anual: $852,000–$1,056,000. Errores de precio, falta de surtido y doble captura analizados con impacto económico real.</p>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="card-tag">Impacto</span>
+          <span class="card-tag">$88K/mes</span>
+          <span class="card-tag">Crítico</span>
+          <span class="card-tag">Anual $1M</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="page-footer">
+    <span>Abarrotes Gayba · <strong>Sistema de Análisis Operativo</strong> · 8 reportes</span>
+    <span>Todos los datos corresponden al análisis de 232 clientes en 5 comunidades</span>
+  </div>
+
+</div>
+</body>
+</html>

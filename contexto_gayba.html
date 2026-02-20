@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abarrotes Gayba — Contexto</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:#FF2D55; --orange:#FF6B35; --yellow:#FFD23F;
+    --purple:#A855F7; --cyan:#06B6D4; --green:#10B981;
+    --bg:#0A0A0F; --card:#1C1C28; --text:#F0F0F5; --muted:#8888AA;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'DM Sans',sans-serif;
+    min-height:100vh;padding:40px 24px;overflow-x:hidden;
+  }
+  body::before{
+    content:'';position:fixed;top:-200px;left:-200px;
+    width:700px;height:700px;
+    background:radial-gradient(circle,rgba(255,107,53,0.09) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  body::after{
+    content:'';position:fixed;bottom:-200px;right:-200px;
+    width:700px;height:700px;
+    background:radial-gradient(circle,rgba(6,182,212,0.07) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .wrapper{max-width:1100px;margin:0 auto;}
+
+  /* HEADER */
+  .header{margin-bottom:48px;border-left:4px solid var(--orange);padding-left:20px;animation:fadeSlideIn .6s ease forwards;}
+  .header .eyebrow{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:10px;}
+  .header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,8vw,88px);line-height:.92;color:var(--text);letter-spacing:1px;margin-bottom:14px;}
+  .header h1 span{color:var(--orange);}
+  .header .subtitle{font-size:17px;color:var(--muted);font-weight:300;line-height:1.6;max-width:720px;}
+  .header .highlight{color:var(--orange);font-weight:700;}
+
+  /* CONTEXT CARD */
+  .context-card{
+    background:var(--card);border:1px solid rgba(255,255,255,.07);
+    border-radius:20px;padding:36px 40px;margin-bottom:40px;
+    position:relative;overflow:hidden;
+    animation:fadeSlideIn .6s ease .1s both;
+  }
+  .context-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--orange),var(--yellow),var(--cyan));
+  }
+  .context-label{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:14px;}
+  .context-text{font-size:17px;color:var(--text);line-height:1.8;font-weight:300;}
+  .context-text strong{color:var(--orange);font-weight:700;}
+
+  /* STATS */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;animation:fadeSlideIn .6s ease .15s both;}
+  .stat-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:24px;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--orange));}
+  .stat-card .val{font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:1;color:var(--accent,var(--orange));display:block;}
+  .stat-card .label{font-size:13px;color:var(--muted);font-weight:500;letter-spacing:.3px;margin-top:6px;}
+
+  /* GRID */
+  .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+  .full{grid-column:1/-1;}
+  .section-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:22px;color:var(--text);display:flex;align-items:center;gap:10px;}
+  .section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
+  .chart-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:28px;}
+
+  /* FLOW DIAGRAM */
+  .flow{display:flex;flex-direction:column;gap:0;}
+  .flow-step{
+    display:flex;align-items:flex-start;gap:18px;padding:20px 18px;
+    border-radius:12px;border:1px solid rgba(255,255,255,.06);
+    background:rgba(255,255,255,.025);position:relative;
+    transition:background .2s,transform .15s;cursor:default;
+  }
+  .flow-step:hover{background:rgba(255,255,255,.05);transform:translateX(4px);}
+  .flow-arrow{
+    text-align:center;padding:8px 0 8px 30px;
+    font-size:20px;color:rgba(255,255,255,.15);
+  }
+  .flow-num{
+    font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--f-color);
+    min-width:36px;text-align:center;line-height:1;flex-shrink:0;margin-top:2px;
+  }
+  .flow-icon{font-size:28px;flex-shrink:0;margin-top:2px;}
+  .flow-body{flex:1;}
+  .flow-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
+  .flow-desc{font-size:14px;color:var(--muted);line-height:1.6;}
+  .flow-badge{
+    display:inline-flex;align-items:center;gap:5px;font-size:12px;
+    padding:3px 10px;border-radius:99px;font-weight:600;margin-top:8px;
+  }
+  .badge-problem{background:rgba(255,45,85,.12);border:1px solid rgba(255,45,85,.25);color:#FF8099;}
+  .badge-ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:#6EEAC4;}
+  .badge-warn{background:rgba(255,210,63,.12);border:1px solid rgba(255,210,63,.25);color:#FFE57A;}
+
+  /* PROBLEM LIST */
+  .problem-list{display:flex;flex-direction:column;gap:16px;}
+  .problem-card{
+    border-radius:12px;padding:20px 18px;position:relative;overflow:hidden;
+    border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025);
+    transition:background .2s,transform .15s;cursor:default;
+  }
+  .problem-card:hover{background:rgba(255,255,255,.05);transform:translateX(4px);}
+  .problem-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;background:var(--p-color);}
+  .problem-header{display:flex;align-items:center;gap:12px;padding-left:12px;margin-bottom:8px;}
+  .problem-icon{font-size:24px;}
+  .problem-title{font-size:17px;font-weight:700;color:var(--text);}
+  .problem-desc{font-size:14px;color:var(--muted);line-height:1.65;padding-left:12px;}
+  .problem-impact-tag{
+    display:inline-block;font-size:11px;padding:3px 10px;border-radius:99px;
+    font-weight:600;margin-top:10px;margin-left:12px;
+    background:rgba(255,45,85,.1);border:1px solid rgba(255,45,85,.2);color:#FF8099;
+  }
+
+  /* SICAR BOX */
+  .sicar-box{
+    background:rgba(255,107,53,.05);border:1px solid rgba(255,107,53,.2);
+    border-radius:14px;padding:24px;margin-bottom:20px;
+    display:flex;align-items:flex-start;gap:16px;
+  }
+  .sicar-icon{font-size:36px;flex-shrink:0;}
+  .sicar-body{}
+  .sicar-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange);margin-bottom:6px;}
+  .sicar-text{font-size:15px;color:var(--text);line-height:1.7;}
+  .sicar-text span{color:var(--orange);font-weight:700;}
+
+  /* COMMUNITIES */
+  .comm-list{display:flex;flex-direction:column;gap:10px;}
+  .comm-item{
+    display:flex;align-items:center;gap:14px;padding:14px 16px;
+    border-radius:10px;background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+    transition:background .2s;cursor:default;
+  }
+  .comm-item:hover{background:rgba(255,255,255,.06);}
+  .comm-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .comm-name{font-size:16px;font-weight:700;color:var(--text);flex:1;}
+  .comm-tag{font-size:12px;color:var(--muted);}
+  .comm-wifi{font-size:16px;}
+
+  /* OPPORTUNITY BOX */
+  .opp-box{
+    background:linear-gradient(135deg,rgba(6,182,212,.08),rgba(16,185,129,.06));
+    border:1px solid rgba(6,182,212,.2);border-radius:16px;padding:28px;
+    position:relative;overflow:hidden;
+  }
+  .opp-box::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--cyan),var(--green));
+  }
+  .opp-label{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:12px;}
+  .opp-title{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--text);margin-bottom:12px;letter-spacing:.5px;}
+  .opp-points{display:flex;flex-direction:column;gap:10px;}
+  .opp-point{display:flex;align-items:flex-start;gap:10px;}
+  .opp-check{color:var(--green);font-size:16px;flex-shrink:0;margin-top:1px;}
+  .opp-text{font-size:15px;color:var(--text);line-height:1.5;}
+
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  @media(max-width:720px){.main-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<style>
+.back-btn {
+  position: fixed; top: 24px; left: 24px; z-index: 9999;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  background: rgba(28,28,40,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px;
+  text-decoration: none;
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px; font-weight: 600; color: #F0F0F5;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background .2s, border-color .2s, transform .2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.back-btn:hover {
+  background: rgba(255,107,53,.15);
+  border-color: rgba(255,107,53,.4);
+  transform: translateX(-3px);
+}
+.back-btn .arrow { font-size: 16px; }
+</style>
+<a class="back-btn" href="index.html">
+  <span class="arrow">←</span>
+  <span>Menú principal</span>
+</a>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <p class="eyebrow">Diagnóstico Operativo · Caso de Estudio</p>
+    <h1>ABARROTES<br><span>GAYBA</span></h1>
+    <p class="subtitle">
+      Empresa distribuidora de abarrotes, alimentos, lácteos y artículos de limpieza que atiende
+      <span class="highlight">5 comunidades cercanas</span>, enfrentando un problema crítico de
+      gestión de pedidos en campo.
+    </p>
+  </div>
+
+  <!-- CONTEXT CARD -->
+  <div class="context-card">
+    <div class="context-label">🏢 Contexto de la Empresa</div>
+    <p class="context-text">
+      Abarrotes Gayba utiliza el sistema <strong>SICAR</strong> para registrar pedidos y generar remisiones en tienda.
+      Sin embargo, cuando el personal sale a las comunidades a levantar pedidos, <strong>los registra a mano en papel con cuaderno</strong>,
+      aunque en los pueblos sí existe electricidad y conexión WiFi. Posteriormente, <strong>otro empleado debe capturar
+      esos pedidos en la computadora</strong> para generar las remisiones, mientras el primero surte la mercancía en el almacén.
+      Este proceso genera errores, retrasos y <strong>duplicación innecesaria del trabajo</strong>.
+    </p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card" style="--accent:#FF6B35">
+      <span class="val">5</span>
+      <span class="label">Comunidades atendidas con distribución</span>
+    </div>
+    <div class="stat-card" style="--accent:#FF2D55">
+      <span class="val">2×</span>
+      <span class="label">Trabajo duplicado por doble captura de pedidos</span>
+    </div>
+    <div class="stat-card" style="--accent:#FFD23F">
+      <span class="val">6</span>
+      <span class="label">Problemas operativos identificados en el proceso</span>
+    </div>
+    <div class="stat-card" style="--accent:#06B6D4">
+      <span class="val">WiFi</span>
+      <span class="label">Hay conectividad en campo — no se está aprovechando</span>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- PROCESS FLOW -->
+    <div class="chart-card" style="animation:fadeSlideIn .6s ease .2s both">
+      <div class="section-title">Flujo Actual del Proceso</div>
+      <div class="flow">
+
+        <div class="flow-step" style="--f-color:#10B981">
+          <div class="flow-num" style="color:#10B981">1</div>
+          <div class="flow-icon">🚶</div>
+          <div class="flow-body">
+            <div class="flow-title">Personal sale a la comunidad</div>
+            <div class="flow-desc">El vendedor visita a los clientes en las 5 comunidades para levantar pedidos de manera presencial.</div>
+            <span class="flow-badge badge-ok">✓ Proceso necesario</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step" style="--f-color:#FFD23F">
+          <div class="flow-num" style="color:#FFD23F">2</div>
+          <div class="flow-icon">📝</div>
+          <div class="flow-body">
+            <div class="flow-title">Pedido registrado a mano en cuaderno</div>
+            <div class="flow-desc">Aunque hay WiFi en las comunidades, el pedido se anota en papel. El sistema SICAR queda desconectado del campo.</div>
+            <span class="flow-badge badge-warn">⚠ Punto de ineficiencia</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step" style="--f-color:#FF6B35">
+          <div class="flow-num" style="color:#FF6B35">3</div>
+          <div class="flow-icon">🔄</div>
+          <div class="flow-body">
+            <div class="flow-title">Regreso a tienda — división de tareas</div>
+            <div class="flow-desc">El vendedor pasa los cuadernos. Se divide: uno captura en computadora, el otro surte en almacén simultáneamente.</div>
+            <span class="flow-badge badge-warn">⚠ Doble recurso humano</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step" style="--f-color:#FF2D55">
+          <div class="flow-num" style="color:#FF2D55">4</div>
+          <div class="flow-icon">💻</div>
+          <div class="flow-body">
+            <div class="flow-title">Captura manual en SICAR</div>
+            <div class="flow-desc">Otro empleado retranscribe todo al sistema. En este paso ocurren errores de precio, cantidades incorrectas y pérdidas de información.</div>
+            <span class="flow-badge badge-problem">✗ Origen de errores</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step" style="--f-color:#A855F7">
+          <div class="flow-num" style="color:#A855F7">5</div>
+          <div class="flow-icon">🧾</div>
+          <div class="flow-body">
+            <div class="flow-title">Generación tardía de remisiones</div>
+            <div class="flow-desc">Las notas de venta se generan horas después del pedido. El inventario en SICAR no refleja la realidad en tiempo real.</div>
+            <span class="flow-badge badge-problem">✗ Desfase de información</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PROBLEMS + COMMUNITIES -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- COMMUNITIES -->
+      <div class="chart-card" style="animation:fadeSlideIn .6s ease .25s both">
+        <div class="section-title">Comunidades Atendidas</div>
+        <div class="sicar-box">
+          <div class="sicar-icon">📡</div>
+          <div class="sicar-body">
+            <div class="sicar-label">Dato clave</div>
+            <p class="sicar-text">Las 5 comunidades cuentan con <span>electricidad y WiFi</span>, pero el proceso actual no aprovecha esta infraestructura para conectar los pedidos al sistema SICAR en tiempo real.</p>
+          </div>
+        </div>
+        <div class="comm-list">
+          <div class="comm-item">
+            <div class="comm-dot" style="background:#FF2D55"></div>
+            <div class="comm-name">Ocotal</div>
+            <div class="comm-tag">52 clientes</div>
+            <div class="comm-wifi">📶</div>
+          </div>
+          <div class="comm-item">
+            <div class="comm-dot" style="background:#FF6B35"></div>
+            <div class="comm-name">Encinal</div>
+            <div class="comm-tag">48 clientes</div>
+            <div class="comm-wifi">📶</div>
+          </div>
+          <div class="comm-item">
+            <div class="comm-dot" style="background:#FFD23F"></div>
+            <div class="comm-name">Mogone</div>
+            <div class="comm-tag">45 clientes</div>
+            <div class="comm-wifi">📶</div>
+          </div>
+          <div class="comm-item">
+            <div class="comm-dot" style="background:#10B981"></div>
+            <div class="comm-name">Chocolate</div>
+            <div class="comm-tag">40 clientes</div>
+            <div class="comm-wifi">📶</div>
+          </div>
+          <div class="comm-item">
+            <div class="comm-dot" style="background:#A855F7"></div>
+            <div class="comm-name">Zarzal</div>
+            <div class="comm-tag">47 clientes</div>
+            <div class="comm-wifi">📶</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPPORTUNITY -->
+      <div class="chart-card" style="animation:fadeSlideIn .6s ease .3s both">
+        <div class="opp-box">
+          <div class="opp-label">💡 Oportunidad de Mejora</div>
+          <div class="opp-title">DIGITALIZACIÓN EN CAMPO</div>
+          <div class="opp-points">
+            <div class="opp-point">
+              <div class="opp-check">✓</div>
+              <div class="opp-text">Captura directa en SICAR desde las comunidades usando el WiFi disponible</div>
+            </div>
+            <div class="opp-point">
+              <div class="opp-check">✓</div>
+              <div class="opp-text">Eliminar la doble captura y liberar a un empleado completo</div>
+            </div>
+            <div class="opp-point">
+              <div class="opp-check">✓</div>
+              <div class="opp-text">Remisiones generadas en tiempo real al momento del pedido</div>
+            </div>
+            <div class="opp-point">
+              <div class="opp-check">✓</div>
+              <div class="opp-text">Inventario actualizado al instante — cero desfase entre pedido y stock</div>
+            </div>
+            <div class="opp-point">
+              <div class="opp-check">✓</div>
+              <div class="opp-text">Trazabilidad digital completa de cada pedido desde el campo</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 6 PROBLEMS FULL WIDTH -->
+    <div class="chart-card full" style="animation:fadeSlideIn .6s ease .4s both">
+      <div class="section-title">6 Problemas Identificados</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+        <div class="problem-card" style="--p-color:#FF2D55">
+          <div class="problem-header">
+            <div class="problem-icon">🔄</div>
+            <div class="problem-title">Doble captura de información</div>
+          </div>
+          <p class="problem-desc">Los pedidos se escriben primero en papel y luego se vuelven a escribir en la computadora. El mismo dato existe dos veces en dos formatos distintos.</p>
+          <span class="problem-impact-tag">⚡ Ineficiencia operativa directa</span>
+        </div>
+
+        <div class="problem-card" style="--p-color:#FF6B35">
+          <div class="problem-header">
+            <div class="problem-icon">⚠️</div>
+            <div class="problem-title">Alto riesgo de errores</div>
+          </div>
+          <p class="problem-desc">La información puede cambiar, perderse o escribirse mal al trasladarla del papel al sistema. Cada transcripción es una nueva oportunidad de error.</p>
+          <span class="problem-impact-tag">⚡ $18K–$25K/mes en errores de precio</span>
+        </div>
+
+        <div class="problem-card" style="--p-color:#FFD23F">
+          <div class="problem-header">
+            <div class="problem-icon">⏱️</div>
+            <div class="problem-title">Pérdida de tiempo</div>
+          </div>
+          <p class="problem-desc">Dos personas realizan tareas que podrían ser hechas por una sola en un solo paso. El tiempo del segundo empleado es completamente evitable.</p>
+          <span class="problem-impact-tag">⚡ $8,000/mes en salarios desperdiciados</span>
+        </div>
+
+        <div class="problem-card" style="--p-color:#10B981">
+          <div class="problem-header">
+            <div class="problem-icon">📦</div>
+            <div class="problem-title">Desfase entre pedido y stock</div>
+          </div>
+          <p class="problem-desc">El sistema no refleja en tiempo real los productos pedidos, afectando el control de inventario y generando pedidos no surtidos por falta de información oportuna.</p>
+          <span class="problem-impact-tag">⚡ $45K–$55K/mes en ventas perdidas</span>
+        </div>
+
+        <div class="problem-card" style="--p-color:#A855F7">
+          <div class="problem-header">
+            <div class="problem-icon">🧾</div>
+            <div class="problem-title">Retrasos en generación de remisiones</div>
+          </div>
+          <p class="problem-desc">Las notas de venta no se generan hasta que alguien captura la información después del regreso del vendedor. El cliente no recibe su comprobante de forma inmediata.</p>
+          <span class="problem-impact-tag">⚡ Impacto en experiencia del cliente</span>
+        </div>
+
+        <div class="problem-card" style="--p-color:#06B6D4">
+          <div class="problem-header">
+            <div class="problem-icon">🔍</div>
+            <div class="problem-title">Falta de trazabilidad</div>
+          </div>
+          <p class="problem-desc">No hay un registro digital inmediato del pedido cuando el cliente lo realiza. Si el cuaderno se pierde o daña, el pedido desaparece sin dejar huella en ningún sistema.</p>
+          <span class="problem-impact-tag">⚡ Riesgo de pérdida total de pedidos</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SICAR INFO + BOTTOM SUMMARY -->
+    <div class="chart-card full" style="animation:fadeSlideIn .6s ease .5s both">
+      <div class="section-title">Sistema SICAR — Uso Actual vs. Potencial</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+
+        <div style="padding:22px;background:rgba(255,45,85,.05);border:1px solid rgba(255,45,85,.15);border-radius:12px;">
+          <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:10px;">❌ Uso Actual</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+            <li style="font-size:15px;color:var(--muted)">Solo se usa en tienda física</li>
+            <li style="font-size:15px;color:var(--muted)">Requiere doble captura manual</li>
+            <li style="font-size:15px;color:var(--muted)">Información retrasada horas</li>
+            <li style="font-size:15px;color:var(--muted)">Sin trazabilidad en campo</li>
+            <li style="font-size:15px;color:var(--muted)">Inventario desactualizado</li>
+          </ul>
+        </div>
+
+        <div style="padding:22px;background:rgba(255,210,63,.04);border:1px solid rgba(255,210,63,.15);border-radius:12px;">
+          <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--yellow);margin-bottom:10px;">⚠️ Causa Raíz</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+            <li style="font-size:15px;color:var(--muted)">No existe acceso móvil a SICAR</li>
+            <li style="font-size:15px;color:var(--muted)">Proceso diseñado para trabajo offline</li>
+            <li style="font-size:15px;color:var(--muted)">Hábito de cuaderno establecido</li>
+            <li style="font-size:15px;color:var(--muted)">WiFi disponible pero sin aprovechar</li>
+            <li style="font-size:15px;color:var(--muted)">Falta de herramienta de campo</li>
+          </ul>
+        </div>
+
+        <div style="padding:22px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.2);border-radius:12px;">
+          <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:10px;">✅ Uso Potencial</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+            <li style="font-size:15px;color:var(--text)">Acceso en campo desde dispositivo</li>
+            <li style="font-size:15px;color:var(--text)">Captura directa en SICAR</li>
+            <li style="font-size:15px;color:var(--text)">Remisión inmediata al cliente</li>
+            <li style="font-size:15px;color:var(--text)">Inventario en tiempo real</li>
+            <li style="font-size:15px;color:var(--text)">Un empleado · un paso · cero errores</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM TOTALS -->
+      <div style="margin-top:24px;padding:24px;background:linear-gradient(120deg,rgba(255,45,85,.08),rgba(255,107,53,.05));border:1px solid rgba(255,107,53,.2);border-radius:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange);margin-bottom:6px;">Impacto total estimado del problema</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--text);">$71,000 <span style="color:var(--muted);font-size:28px">–</span> $88,000 <span style="font-size:22px;color:var(--muted)">/mes</span></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px;">Proyección anual</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--red);">$852K – $1,056K</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:4px;">Pérdida evitable con digitalización en campo</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

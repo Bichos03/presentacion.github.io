@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distribución de Clientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #FF2D55;
+    --orange: #FF6B35;
+    --yellow: #FFD23F;
+    --bg: #0A0A0F;
+    --surface: #13131A;
+    --card: #1C1C28;
+    --text: #F0F0F5;
+    --muted: #8888AA;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(255,45,85,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .wrapper { max-width: 1100px; margin: 0 auto; }
+
+  /* HEADER */
+  .header {
+    margin-bottom: 48px;
+    border-left: 4px solid var(--red);
+    padding-left: 20px;
+    animation: fadeSlideIn 0.6s ease forwards;
+  }
+  .header .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--red); margin-bottom: 8px;
+  }
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 7vw, 72px);
+    line-height: 0.95; color: var(--text); letter-spacing: 1px; margin-bottom: 12px;
+  }
+  .header .subtitle { font-size: 15px; color: var(--muted); font-weight: 300; }
+  .header .highlight { color: var(--red); font-weight: 700; }
+
+  /* STAT CARDS */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-bottom: 40px;
+    animation: fadeSlideIn 0.6s ease 0.1s both;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 24px; position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: var(--accent, var(--red));
+  }
+  .stat-card .val {
+    font-family: 'Bebas Neue', sans-serif; font-size: 52px;
+    line-height: 1; color: var(--accent, var(--red)); display: block;
+  }
+  .stat-card .label {
+    font-size: 12px; color: var(--muted); font-weight: 500;
+    letter-spacing: 0.5px; margin-top: 4px; text-transform: uppercase;
+  }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 20px; margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+    letter-spacing: 1px; margin-bottom: 20px; color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08);
+  }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px; padding: 28px;
+    animation: fadeSlideIn 0.6s ease 0.2s both;
+  }
+
+  /* COMMUNITY BARS */
+  .community-list { display: flex; flex-direction: column; gap: 20px; }
+  .community-item { }
+  .community-header {
+    display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;
+  }
+  .community-name { font-weight: 700; font-size: 15px; color: var(--text); }
+  .community-stats { font-size: 12px; color: var(--muted); }
+  .community-stats strong { color: var(--text); font-size: 15px; }
+  .community-pct {
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+    color: var(--bar-color); margin-left: 8px;
+  }
+
+  .bar-track {
+    height: 10px; background: rgba(255,255,255,0.06);
+    border-radius: 99px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 99px;
+    transition: width 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0; background: var(--bar-color);
+  }
+  .bar-fill.animated { width: var(--target); }
+
+  /* PIE / DONUT */
+  .donut-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px; padding: 28px;
+    animation: fadeSlideIn 0.6s ease 0.3s both;
+    display: flex; flex-direction: column;
+  }
+
+  .donut-wrap {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 28px;
+  }
+
+  .donut-svg { filter: drop-shadow(0 0 20px rgba(255,45,85,0.15)); }
+
+  .donut-legend { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 10px; cursor: default;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .legend-name { font-size: 13px; color: var(--muted); flex: 1; }
+  .legend-count { font-size: 13px; color: var(--text); font-weight: 600; }
+  .legend-pct {
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+    min-width: 46px; text-align: right;
+  }
+
+  /* FULL-WIDTH TABLE */
+  .table-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px; padding: 28px;
+    animation: fadeSlideIn 0.6s ease 0.4s both;
+    grid-column: 1 / -1;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted);
+    padding: 10px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.2s;
+  }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody tr:last-child { border-bottom: none; font-weight: 700; }
+  tbody tr:last-child td { color: var(--text); border-top: 1px solid rgba(255,255,255,0.12); padding-top: 14px; margin-top: 4px; }
+  tbody td { padding: 12px 16px; font-size: 14px; color: var(--muted); }
+  tbody td:first-child { color: var(--text); font-weight: 600; }
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 6px;
+    font-size: 11px; font-weight: 700; margin-right: 8px;
+    background: rgba(255,45,85,0.15); color: var(--red);
+  }
+  .pct-cell {
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  }
+  .mini-bar {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mini-track {
+    flex: 1; height: 6px; background: rgba(255,255,255,0.06);
+    border-radius: 99px; overflow: hidden;
+  }
+  .mini-fill {
+    height: 100%; border-radius: 99px;
+    transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0;
+  }
+  .mini-fill.animated { width: var(--target); }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media(max-width: 700px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<style>
+.back-btn {
+  position: fixed; top: 24px; left: 24px; z-index: 9999;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  background: rgba(28,28,40,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px;
+  text-decoration: none;
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px; font-weight: 600; color: #F0F0F5;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background .2s, border-color .2s, transform .2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.back-btn:hover {
+  background: rgba(255,107,53,.15);
+  border-color: rgba(255,107,53,.4);
+  transform: translateX(-3px);
+}
+.back-btn .arrow { font-size: 16px; }
+</style>
+<a class="back-btn" href="index.html">
+  <span class="arrow">←</span>
+  <span>Menú principal</span>
+</a>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <p class="eyebrow">Análisis de Cobertura · Rutas de Distribución</p>
+    <h1>DISTRIBUCIÓN<br>DE CLIENTES</h1>
+    <p class="subtitle">
+      <span class="highlight">232 clientes activos</span> distribuidos en 5 comunidades.
+      Ocotal concentra la mayor base con el 22.4% del total.
+    </p>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stats-row">
+    <div class="stat-card" style="--accent:#FF2D55">
+      <span class="val">232</span>
+      <span class="label">Total de clientes activos en ruta</span>
+    </div>
+    <div class="stat-card" style="--accent:#FF6B35">
+      <span class="val">5</span>
+      <span class="label">Comunidades atendidas</span>
+    </div>
+    <div class="stat-card" style="--accent:#FFD23F">
+      <span class="val">46.4</span>
+      <span class="label">Promedio de clientes por comunidad</span>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- BARS -->
+    <div class="chart-card">
+      <div class="section-title">Clientes por Comunidad</div>
+      <div class="community-list">
+
+        <div class="community-item">
+          <div class="community-header">
+            <span class="community-name">Ocotal</span>
+            <span class="community-stats">
+              <strong>52</strong> clientes
+              <span class="community-pct" style="--bar-color:#FF2D55">22.4%</span>
+            </span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="--target:100%; --bar-color:linear-gradient(90deg,#FF2D55,#FF6B35)"></div>
+          </div>
+        </div>
+
+        <div class="community-item">
+          <div class="community-header">
+            <span class="community-name">Encinal</span>
+            <span class="community-stats">
+              <strong>48</strong> clientes
+              <span class="community-pct" style="--bar-color:#FF6B35">20.7%</span>
+            </span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="--target:92%; --bar-color:linear-gradient(90deg,#FF6B35,#FFD23F)"></div>
+          </div>
+        </div>
+
+        <div class="community-item">
+          <div class="community-header">
+            <span class="community-name">Zarzal</span>
+            <span class="community-stats">
+              <strong>47</strong> clientes
+              <span class="community-pct" style="--bar-color:#FFD23F">20.3%</span>
+            </span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="--target:90%; --bar-color:linear-gradient(90deg,#FFD23F,#A855F7)"></div>
+          </div>
+        </div>
+
+        <div class="community-item">
+          <div class="community-header">
+            <span class="community-name">Mogoñe</span>
+            <span class="community-stats">
+              <strong>45</strong> clientes
+              <span class="community-pct" style="--bar-color:#A855F7">19.4%</span>
+            </span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="--target:86%; --bar-color:linear-gradient(90deg,#A855F7,#06B6D4)"></div>
+          </div>
+        </div>
+
+        <div class="community-item">
+          <div class="community-header">
+            <span class="community-name">Chocolate</span>
+            <span class="community-stats">
+              <strong>40</strong> clientes
+              <span class="community-pct" style="--bar-color:#06B6D4">17.2%</span>
+            </span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="--target:77%; --bar-color:linear-gradient(90deg,#06B6D4,#22D3EE)"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DONUT -->
+    <div class="donut-card">
+      <div class="section-title">Proporción</div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" width="190" height="190" viewBox="0 0 190 190">
+          <!-- r=70, circunf=439.8 -->
+          <!-- Ocotal 22.4% = 98.5 -->
+          <circle cx="95" cy="95" r="70" fill="none" stroke="#FF2D55" stroke-width="26"
+            stroke-dasharray="98.5 341.3" stroke-dashoffset="0" transform="rotate(-90 95 95)"/>
+          <!-- Encinal 20.7% = 91.0 -->
+          <circle cx="95" cy="95" r="70" fill="none" stroke="#FF6B35" stroke-width="26"
+            stroke-dasharray="91.0 348.8" stroke-dashoffset="-98.5" transform="rotate(-90 95 95)"/>
+          <!-- Zarzal 20.3% = 89.3 -->
+          <circle cx="95" cy="95" r="70" fill="none" stroke="#FFD23F" stroke-width="26"
+            stroke-dasharray="89.3 350.5" stroke-dashoffset="-189.5" transform="rotate(-90 95 95)"/>
+          <!-- Mogone 19.4% = 85.3 -->
+          <circle cx="95" cy="95" r="70" fill="none" stroke="#A855F7" stroke-width="26"
+            stroke-dasharray="85.3 354.5" stroke-dashoffset="-278.8" transform="rotate(-90 95 95)"/>
+          <!-- Chocolate 17.2% = 75.6 -->
+          <circle cx="95" cy="95" r="70" fill="none" stroke="#06B6D4" stroke-width="26"
+            stroke-dasharray="75.6 364.2" stroke-dashoffset="-364.1" transform="rotate(-90 95 95)"/>
+          <!-- Center -->
+          <text x="95" y="88" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="32" fill="#F0F0F5">232</text>
+          <text x="95" y="107" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#8888AA">clientes</text>
+        </svg>
+
+        <div class="donut-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#FF2D55"></div>
+            <span class="legend-name">Ocotal</span>
+            <span class="legend-count">52</span>
+            <span class="legend-pct" style="color:#FF2D55">22.4%</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#FF6B35"></div>
+            <span class="legend-name">Encinal</span>
+            <span class="legend-count">48</span>
+            <span class="legend-pct" style="color:#FF6B35">20.7%</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#FFD23F"></div>
+            <span class="legend-name">Zarzal</span>
+            <span class="legend-count">47</span>
+            <span class="legend-pct" style="color:#FFD23F">20.3%</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#A855F7"></div>
+            <span class="legend-name">Mogoñe</span>
+            <span class="legend-count">45</span>
+            <span class="legend-pct" style="color:#A855F7">19.4%</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#06B6D4"></div>
+            <span class="legend-name">Chocolate</span>
+            <span class="legend-count">40</span>
+            <span class="legend-pct" style="color:#06B6D4">17.2%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="section-title">Tabla Detallada</div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Comunidad</th>
+            <th>Clientes</th>
+            <th>Porcentaje</th>
+            <th style="width:35%">Participación visual</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="rank-badge">1</span></td>
+            <td>Ocotal</td>
+            <td>52</td>
+            <td><span class="pct-cell" style="color:#FF2D55">22.4%</span></td>
+            <td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="--target:100%;background:#FF2D55"></div></div></div></td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge" style="background:rgba(255,107,53,0.15);color:#FF6B35">2</span></td>
+            <td>Encinal</td>
+            <td>48</td>
+            <td><span class="pct-cell" style="color:#FF6B35">20.7%</span></td>
+            <td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="--target:92%;background:#FF6B35"></div></div></div></td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge" style="background:rgba(255,210,63,0.15);color:#FFD23F">3</span></td>
+            <td>Zarzal</td>
+            <td>47</td>
+            <td><span class="pct-cell" style="color:#FFD23F">20.3%</span></td>
+            <td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="--target:90%;background:#FFD23F"></div></div></div></td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge" style="background:rgba(168,85,247,0.15);color:#A855F7">4</span></td>
+            <td>Mogoñe</td>
+            <td>45</td>
+            <td><span class="pct-cell" style="color:#A855F7">19.4%</span></td>
+            <td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="--target:86%;background:#A855F7"></div></div></div></td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge" style="background:rgba(6,182,212,0.15);color:#06B6D4">5</span></td>
+            <td>Chocolate</td>
+            <td>40</td>
+            <td><span class="pct-cell" style="color:#06B6D4">17.2%</span></td>
+            <td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="--target:77%;background:#06B6D4"></div></div></div></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>TOTAL</td>
+            <td>232</td>
+            <td><span class="pct-cell" style="color:var(--text)">100%</span></td>
+            <td><div class="mini-bar"><div class="mini-track"><div class="mini-fill" style="--target:100%;background:linear-gradient(90deg,#FF2D55,#06B6D4)"></div></div></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill, .mini-fill').forEach(el => el.classList.add('animated'));
+  }, 300);
+</script>
+</body>
+</html>
